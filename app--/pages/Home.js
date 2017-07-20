@@ -188,6 +188,25 @@ class Home extends Component {
     }
   }
 
+  getDaysText(item) {
+    let daysText;
+    if (item.every.length === 7) {
+      daysText = 'De lunes a domingo';
+    }
+    else {      
+      let days = item.every.join(', ');
+      if (days === 'lunes, martes, miércoles, jueves, viernes') {
+        daysText = 'De lunes a viernes';
+      }
+      else {
+        daysText = item.every.length ? 'Cada ' + days :
+          item.when ? Util.getShortDates(item.when) : '';
+      }
+    }   
+
+    return daysText; 
+  }
+
   navigateTo(item, component) {
     // Separators are not clickable.
     if (item.isSeparator) return;
@@ -230,14 +249,18 @@ class Home extends Component {
         <Text style={styles.heading}>{item.title}</Text>
       );
     }
+    let where = item.where ?
+      <Text style={[styles.listItem_where, styles.listItem_text]}>
+      {item.where}</Text> : null;
 
-    let when = item.every.length ? 'Cada ' + item.every.join(', ') :
-      item.when ? Util.getShortDates(item.when) : '';
+    let when = <Text style={[styles.listItem_when, styles.listItem_text]}>
+      {this.getDaysText(item)}</Text>;
+
     return(
       <View style={styles.listItem_inner_container}>
         <Text style={[styles.listItem_title, styles.listItem_text]}>{item.title}</Text>
-        <Text style={[styles.listItem_where, styles.listItem_text]}>{item.where}</Text>
-        <Text style={[styles.listItem_when, styles.listItem_text]}>{when}</Text>
+        {where}
+        {when}
       </View>
     );
   }

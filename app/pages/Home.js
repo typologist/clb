@@ -12,15 +12,17 @@ import {
   ActivityIndicator,
   DatePickerIOS,
   TouchableOpacity,
-  RefreshControl
+  RefreshControl,
+  AsyncStorage,
 } from 'react-native';
+import Menu, { MenuContext, MenuOptions, MenuOption, MenuTrigger } from 'react-native-menu';
 
 //import moment from 'moment/src/moment';  // Doesn't work for locale.
 var moment = require('moment');
 import 'moment/locale/es';
 moment.locale('es');
 
-import { REQUEST_PLACES_URL, REQUEST_ACTIVITIES_URL } from '../components/Constants';
+import { REQUEST_CITIES_URL, REQUEST_PLACES_URL, REQUEST_ACTIVITIES_URL } from '../components/Constants';
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const FadeInImage = require('../components/FadeInImage');
@@ -41,15 +43,21 @@ class Home extends Component {
       comingSoon: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2
       }),
-      featuredItems: [],
+      featuredItems: [],      
+      cities: [],
+      activeCity: 'Santo Domingo',
       isListEmpty: false,
       hasError: false,
     };
   }
 
   componentDidMount() {
-    this.fetchPlaces();
-    this.fetchActivities().done();
+    this.fetchCities();
+    AsyncStorage.getItem('@Clubbin:city').then((city) => {
+      city = city || '';
+      this.fetchPlaces(city);
+      this.fetchActivities(city);
+    }).done();
   }
 
   refreshScrollView() {
@@ -57,9 +65,26 @@ class Home extends Component {
     .then(()=> this.scrollView.scrollTo({y: 0}))
     .done();
   }
+  fetchCities() {
+    return fetch(REQUEST_CITIES_URL)
+      .then((response) => response.json())
+      .then((responseData) => {
+        if (responseData) {
+            this.setState({
+              cities: responseData.map((city => city.name)),
+            });
+        }
+      })
+      .catch((error) => {
+        this.setState({hasError: true});
+        console.log('Error retrieving cities from the server: ', error);
+      });
+  }
 
-  fetchPlaces() {
-    return fetch(REQUEST_PLACES_URL)
+  fetchPlaces(city) {
+    this.setState({isLoading: true});
+
+    return fetch(REQUEST_PLACES_URL + city)
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -75,6 +100,8 @@ class Home extends Component {
             });
 
             this.setState({
+              activeCity: city,
+              isLoading: false,
               featuredItems: this.state.featuredItems.concat(places)
             });
 
@@ -87,8 +114,10 @@ class Home extends Component {
       });
   }
 
-  fetchActivities() {
-    return fetch(REQUEST_ACTIVITIES_URL)
+  fetchActivities(city) {
+    this.setState({isLoading: true});
+    
+    return fetch(REQUEST_ACTIVITIES_URL + city)
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -135,6 +164,51 @@ class Home extends Component {
       });
   }
 
+  // Creates a list of unique city names, from the items.
+  extractCitiesFromItems(allItems) {
+    let cities = [];
+    let unique = {};
+
+    for (let prop in allItems) {
+      // Check the "category" first.
+      if (typeof(unique[allItems[prop].city]) == "undefined" && 
+          allItems[prop].city !== null) {
+        cities.push(allItems[prop].city);
+      }
+      unique[allItems[prop].city] = 0;
+    }    
+    return cities;
+  }
+
+  setCity(city) {
+    try {
+      AsyncStorage.setItem('@Clubbin:city', city);
+      this.fetchPlaces(city);
+      this.fetchActivities(city);
+    } catch (error) {
+      console.log('Cannot save the city');
+    }
+  }
+
+  getDaysText(item) {
+    let daysText;
+    if (item.every.length === 7) {
+      daysText = 'De lunes a domingo';
+    }
+    else {      
+      let days = item.every.join(', ');
+      if (days === 'lunes, martes, miércoles, jueves, viernes') {
+        daysText = 'De lunes a viernes';
+      }
+      else {
+        daysText = item.every.length ? 'Cada ' + days :
+          item.when ? Util.getShortDates(item.when) : '';
+      }
+    }   
+
+    return daysText; 
+  }
+
   navigateTo(item, component) {
     // Separators are not clickable.
     if (item.isSeparator) return;
@@ -177,18 +251,18 @@ class Home extends Component {
         <Text style={styles.heading}>{item.title}</Text>
       );
     }
+    let where = item.where ?
+      <Text style={[styles.listItem_where, styles.listItem_text]}>
+      {item.where}</Text> : null;
 
-    let when = item.every.length ? 'Cada ' + item.every.join(', ') :
-      item.when ? Util.getShortDates(item.when) : '';
-
-    // Only show the "where" text if there's any.
-    let whereTag = item.where ? <Text style={[styles.listItem_where, styles.listItem_text]}>{item.where}</Text> : false;
+    let when = <Text style={[styles.listItem_when, styles.listItem_text]}>
+      {this.getDaysText(item)}</Text>;
 
     return(
       <View style={styles.listItem_inner_container}>
         <Text style={[styles.listItem_title, styles.listItem_text]}>{item.title}</Text>
-        {whereTag}
-        <Text style={[styles.listItem_when, styles.listItem_text]}>{when}</Text>
+        {where}
+        {when}
       </View>
     );
   }
@@ -259,6 +333,35 @@ class Home extends Component {
     }
   }
 
+  renderTopNavigation() {
+    const menuOptions = this.state.cities.map((cityName, i) => {
+      return (
+        <MenuOption value={cityName} key={i}>
+          <Text style={{color: 'white'}}>{cityName}</Text>
+        </MenuOption>
+      );
+    });
+
+    return(
+      <View style={{ padding: 6, flexDirection: 'row', backgroundColor: 'transparent' }}>
+        <View style={{ flex: 1 }}></View>
+        <Menu onSelect={(value) => this.setCity(value)}>
+          <MenuTrigger>
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{ fontSize: 28, color: '#fff' }}>&#8942;</Text>
+              <Text style={{ color: '#fff', paddingTop: 10 }}>
+                {this.state.activeCity.toUpperCase()}
+              </Text>
+            </View>
+          </MenuTrigger>
+          <MenuOptions optionsContainerStyle={{ backgroundColor: 'black', opacity: .9, position: 'absolute', left: 10 }}>
+            {menuOptions}
+          </MenuOptions>
+        </Menu>
+      </View>
+    );
+  }
+
   render() {
     if (this.state.isLoading) {
       return this.renderLoadingView();
@@ -280,15 +383,24 @@ class Home extends Component {
           />
         }
       >
-        {this.renderFeaturedItem()}
-        <View style={styles.image_separator} />
-        {this.renderEmptyListText()}
-        <ListView
-          dataSource={this.state.comingSoon}
-          renderRow={this.renderRow.bind(this)}
-          style={styles.listView}
-          enableEmptySections={true}
-        />
+        <MenuContext style={styles.topbar_container}>
+          <View style={{
+            flexDirection: 'row', 
+            justifyContent: 'space-between',
+            marginTop: 58
+          }}>
+            {this.renderTopNavigation()}
+          </View>
+          {this.renderFeaturedItem()}
+          <View style={styles.image_separator} />
+          {this.renderEmptyListText()}
+          <ListView
+            dataSource={this.state.comingSoon}
+            renderRow={this.renderRow.bind(this)}
+            style={styles.listView}
+            enableEmptySections={true}
+          />        
+        </MenuContext>
       </ScrollView>
     )
   }
@@ -381,6 +493,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     borderBottomWidth: 1,
     borderColor: GlobalStyles.primaryColor,
+  },
+  topbar_container: {
+    flex: 1,
   },
   listView: {
     flex: 1,

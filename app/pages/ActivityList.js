@@ -12,7 +12,8 @@ import {
   ActivityIndicator,
   DatePickerIOS,
   TouchableOpacity,
-  RefreshControl
+  RefreshControl,
+  AsyncStorage,
 } from 'react-native';
 import Menu, { MenuContext, MenuOptions, MenuOption, MenuTrigger } from 'react-native-menu';
 
@@ -25,7 +26,7 @@ const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const GlobalStyles = require('../components/GlobalStyles');
 const ActivityDetail = require('./ActivityDetail');
-const REQUEST_URL =  'http://clubbinrd.com/api/activities?time=' + moment().unix() + '&city=';
+const REQUEST_URL =  'http://clubbinrd.com/api/activities?city=';
 
 
 class ActivityList extends Component {
@@ -45,6 +46,7 @@ class ActivityList extends Component {
       activeCategory: '',
       categories: [],
       isListEmpty: false,
+      activeCity: '',
       datePickerVisible: false,
       date: new Date(),
       minimumDate: new Date(),  // prevents selecting events in the past.
@@ -54,19 +56,47 @@ class ActivityList extends Component {
   }
 
   componentDidMount() {
-    this.fetchData().done();
-  }
-
-  refreshListView() {
-    this.fetchData()
-      .then(()=> this.listView.scrollTo({y: 0}))
+    this.getCityFromLocalStorage()
+      .then((city) => this.fetchData(city).done())
       .done();
   }
 
-  fetchData() {
-    this.resetNoActivitiesMessage();
+  getCityFromLocalStorage() {
+    return AsyncStorage.getItem('@Clubbin:city')
+      .then((city) => city || '');
+  }
 
-    return fetch(REQUEST_URL)
+  refreshListView() {
+    this.getCityFromLocalStorage()
+      .then((city) => {
+        this.fetchData(city)
+          .then(()=> this.listView.scrollTo({y: 0}))
+          .done();
+      });
+  }
+
+  refreshIfCityChanged() {
+    // If the city on local storage is different from the one
+    // in this scene (activeCity), ask the server for data.
+    this.getCityFromLocalStorage().then((city) => {
+      if (city !== this.state.activeCity) {
+        this.fetchData(city).done();
+      }
+    });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // Refresh the view if on the list view 
+    // (which is the first element in the routeStack array)
+    if (nextProps.navigator.state.routeStack.length === 1) {
+      this.refreshIfCityChanged();
+    }
+  }
+
+  fetchData(city) {
+    this.resetNoActivitiesMessage();
+    console.log('time', REQUEST_URL + city + '&time=' + moment().unix())
+    return fetch(REQUEST_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -93,6 +123,7 @@ class ActivityList extends Component {
             dataSource: this.state.dataSource.cloneWithRows(items),
             isLoading: false,
             allItems: items,
+            activeCity: city,
             activeCategory: activeCategory,
             categories: this.extractCategoriesFromItems(allItems),
             isListEmpty: items.length === 0 ? true : false,
