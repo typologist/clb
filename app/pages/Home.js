@@ -61,12 +61,23 @@ class Home extends Component {
   }
 
   refreshScrollView() {
-    this.fetchActivities()
-    .then(()=> this.scrollView.scrollTo({y: 0}))
-    .done();
+    this.getCityFromLocalStorage()
+      .then((city) => {
+        // TODO: Maybe we need to fetch the cities and places
+        // as well?
+        this.fetchActivities(city)
+          .then(()=> this.scrollView.scrollTo({y: 0}))
+          .done();
+      });
   }
+  
+  getCityFromLocalStorage() {
+    return AsyncStorage.getItem('@Clubbin:city')
+      .then((city) => city || '');
+  }
+
   fetchCities() {
-    return fetch(REQUEST_CITIES_URL)
+    return fetch(REQUEST_CITIES_URL + '?time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -84,7 +95,7 @@ class Home extends Component {
   fetchPlaces(city) {
     this.setState({isLoading: true});
 
-    return fetch(REQUEST_PLACES_URL + city)
+    return fetch(REQUEST_PLACES_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -117,7 +128,7 @@ class Home extends Component {
   fetchActivities(city) {
     this.setState({isLoading: true});
     
-    return fetch(REQUEST_ACTIVITIES_URL + city)
+    return fetch(REQUEST_ACTIVITIES_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -489,7 +500,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     marginBottom: 49,
-    marginTop: 60,
+    marginTop: 0,
     backgroundColor: '#000',
     borderBottomWidth: 1,
     borderColor: GlobalStyles.primaryColor,

@@ -75,11 +75,12 @@ class ActivityList extends Component {
       });
   }
 
-  refreshIfCityChanged() {
+  refreshListIfCityChanged() {
     // If the city on local storage is different from the one
     // in this scene (activeCity), ask the server for data.
     this.getCityFromLocalStorage().then((city) => {
       if (city !== this.state.activeCity) {
+        this.setState({isLoading: true});
         this.fetchData(city).done();
       }
     });
@@ -89,13 +90,12 @@ class ActivityList extends Component {
     // Refresh the view if on the list view 
     // (which is the first element in the routeStack array)
     if (nextProps.navigator.state.routeStack.length === 1) {
-      this.refreshIfCityChanged();
+      this.refreshListIfCityChanged();
     }
   }
 
   fetchData(city) {
     this.resetNoActivitiesMessage();
-    console.log('time', REQUEST_URL + city + '&time=' + moment().unix())
     return fetch(REQUEST_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {

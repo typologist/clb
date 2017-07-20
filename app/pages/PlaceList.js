@@ -23,7 +23,7 @@ const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const GlobalStyles = require('../components/GlobalStyles');
 const PlaceDetail = require('./PlaceDetail');
-const REQUEST_URL =  'http://clubbinrd.com/api/places?time=' + moment().unix() + '?city=';
+const REQUEST_URL =  'http://clubbinrd.com/api/places?city=';
 
 class PlaceList extends Component {
 
@@ -41,25 +41,52 @@ class PlaceList extends Component {
       categories: [],
       activeCategory: PlaceList.all,
       isListEmpty: false,
+      activeCity: '',
       hasError: false,
     };
   }
 
   componentDidMount() {
-    this.fetchData().done();
-  }
-
-  refreshListView() {
-    this.fetchData()
-      .then(()=> {
-        this.setState({ activeCategory: PlaceList.all });
-        this.listView.scrollTo({y: 0});
-      })
+    this.getCityFromLocalStorage()
+      .then((city) => this.fetchData(city).done())
       .done();
   }
 
-  fetchData() {
-    return fetch(REQUEST_URL)
+  componentWillReceiveProps(nextProps) {
+    // Refresh the view if on the list view 
+    // (which is the first element in the routeStack array)
+    if (nextProps.navigator.state.routeStack.length === 1) {
+      this.refreshListIfCityChanged();
+    }
+  }
+
+  refreshListView() {
+    this.getCityFromLocalStorage()
+      .then((city) => {
+        this.fetchData(city)
+          .then(()=> this.listView.scrollTo({y: 0}))
+          .done();
+      });
+  }
+
+  getCityFromLocalStorage() {
+    return AsyncStorage.getItem('@Clubbin:city')
+      .then((city) => city || '');
+  }
+
+  refreshListIfCityChanged() {
+    // If the city on local storage is different from the one
+    // in this scene (activeCity), ask the server for data.
+    this.getCityFromLocalStorage().then((city) => {
+      if (city !== this.state.activeCity) {
+        this.setState({isLoading: true});
+        this.fetchData(city).done();
+      }
+    });
+  }
+
+  fetchData(city) {
+    return fetch(REQUEST_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
         if (responseData) {
@@ -72,6 +99,8 @@ class PlaceList extends Component {
             dataSource: this.state.dataSource.cloneWithRows(directoryList),
             isLoading: false,
             allItems: results,
+            activeCity: city,
+            activeCategory: PlaceList.all,
             categories: this.extractCategoriesFromItems(results),
             isListEmpty: results.length === 0 ? true : false,
           });
