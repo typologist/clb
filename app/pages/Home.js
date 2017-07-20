@@ -23,13 +23,13 @@ import 'moment/locale/es';
 moment.locale('es');
 
 import { REQUEST_CITIES_URL, REQUEST_PLACES_URL, REQUEST_ACTIVITIES_URL } from '../components/Constants';
+const GlobalState = require('../components/GlobalState');
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const FadeInImage = require('../components/FadeInImage');
 const GlobalStyles = require('../components/GlobalStyles');
 const ActivityDetail = require('./ActivityDetail');
 const PlaceDetail = require('./PlaceDetail');
-
 
 class Home extends Component {
 
@@ -116,6 +116,11 @@ class Home extends Component {
               featuredItems: this.state.featuredItems.concat(places)
             });
 
+            // We have to pass the places through this method first since
+            // it removes duplicates and adds the 'images' property.
+            GlobalState.set({
+              places: Util.getDirectoryList(responseData)
+            });
         }
         return true;
       })

@@ -11,8 +11,10 @@ import {
   Navigator,
 } from 'react-native';
 
+const GlobalState = require('../components/GlobalState');
 const Util = require('../components/Util');
 const GlobalStyles = require('../components/GlobalStyles');
+const PlaceDetail = require('./PlaceDetail');
 
 
 class ActivityDetail extends Component {
@@ -28,6 +30,39 @@ class ActivityDetail extends Component {
     );
   }
 
+  renderButton(label, icon) {
+    return (
+      <TouchableHighlight
+        onPress={ () => this.navigateToPlace() }>
+        <View style={styles.button_container}>
+          <Text style={styles.button_text}>{label.toUpperCase()}</Text>
+          <Image source={require('../images/right_arrow_white.png')}
+            style={styles.button_icon}  />
+        </View>
+      </TouchableHighlight>
+    );
+  }
+
+  // Find a place in the global state with the name
+  findPlaceByTitle(title) {
+    // Since the places titles are uppercased in the global
+    // storage, we convert in order to compare.
+    let upperCasedTitle = title.toUpperCase();
+    let place = GlobalState.get('places').find(place => {
+      return place.title && place.title === upperCasedTitle;
+    });
+    return(place);
+  }
+
+  navigateToPlace() {
+    let item = this.findPlaceByTitle(this.props.item.where);
+    this.props.navigator.push({
+      title: item.title,
+      component: PlaceDetail,
+      passProps: {item}
+    });
+  }
+  
   renderItemProperty(property, label='') {
     let item = this.props.item;
 
@@ -70,6 +105,8 @@ class ActivityDetail extends Component {
       <ScrollView style={styles.container}>
         {this.renderImage()}
         <View style={GlobalStyles.horizontalSeparator}></View>
+            {this.renderButton('Información Lugar', require('../images/events_white_icon.png'))}
+            <Text style={GlobalStyles.horizontalSeparator}></Text>
             {when}
             {this.renderItemProperty('description')}
             {this.renderItemProperty('openBar', 'OPEN BAR')}
@@ -117,6 +154,22 @@ const styles = StyleSheet.create({
         color: '#9012FF',
         marginTop: 4,
         marginBottom: 2,
+    },
+    button_container: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      padding: 5,
+      paddingLeft: 15,
+    },
+    button_text: {
+      flex: 1,
+      marginLeft: 10,
+      height: 30,
+      marginTop: 7,
+      color: '#fff',
+      fontFamily: GlobalStyles.primaryFontLight,
+      fontSize: 16,
     },
     copyright: {
       fontSize: 11,
