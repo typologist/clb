@@ -93,6 +93,88 @@ class Util {
     return uniqueItems;
   }
 
+  static startsWith(char, lettersHash) {
+    return lettersHash[char] && lettersHash[char] === char;
+  }
+
+  // Returns an object with format { A:'A', ...}
+  static getAlphaNumericHash() {
+    let lettersArray = [
+      '0-9', 'A', 'B', 'C', 'D', 'E',
+      'F', 'G', 'H', 'I', 'J', 'K','L',
+      'M', 'N', 'Ñ', 'O', 'P', 'Q','R', 'S',
+      'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    ];
+
+    let lettersHash = {};
+    lettersArray.forEach((letter) => {
+      lettersHash[letter] = letter;
+    });
+
+    return lettersHash;
+  }
+
+  // Creates a list with letters separators and add an "images" property 
+  // that groups each element's images.
+  static getDirectoryList(results) {
+    let lettersHash = Util.getAlphaNumericHash();
+    let directoryList = [];
+
+    if (results.length === 0) return directoryList;
+
+    results.forEach((item, i)=> {
+        item.title = item.title.toUpperCase();
+        let firstChar = item.title.charAt(0);
+
+        // If it starts with a number...
+        if (Util.isNumber(firstChar) && lettersHash['0-9']) {
+          let letterItem = {
+            title: lettersHash['0-9'],
+            isSeparator: true
+          };
+          directoryList.push(letterItem);
+          delete lettersHash['0-9'];
+        }
+
+        // If it starts with a letter from the alphabet...
+        if (Util.startsWith(firstChar, lettersHash)) {
+          // Add the letter item...
+          let letterItem = {
+            title: lettersHash[firstChar],
+            isSeparator: true
+          };
+          directoryList.push(letterItem);
+          // And remove this letter from the hash.
+          delete lettersHash[firstChar];
+        }
+
+        // Group items by title.
+        // Since the api/places might return the same item multiple times (e.g.
+        // if it has many images it will return one item per image), we do 2
+        // things here.
+
+        // First we create a new property called images, and group there
+        // all the images ('uri's from each duplicated element).
+        item.images = [];
+        if (item.uri) {
+          item.images.push(Util.getImagePath(item.uri, 'large')); // Use the 'large' image style.
+        }
+        let itemExists = directoryList.some((listItem) => {
+          if (listItem.title === item.title) {
+            listItem.images.push(item.uri);
+            return true;
+          }
+        });
+
+        // Second, if this item already exists, we don't add it again.
+        if (!itemExists) {
+          directoryList.push(item);
+        }
+
+    });
+    return directoryList;
+  }
+
 }
 
 module.exports = Util;
