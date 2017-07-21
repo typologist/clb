@@ -56,10 +56,13 @@ class ActivityDetail extends Component {
 
   navigateToPlace() {
     let item = this.findPlaceByTitle(this.props.item.where);
+
     this.props.navigator.push({
       title: item.title,
       component: PlaceDetail,
-      passProps: {item}
+      passProps: {
+        item: item,
+        ActivityList: this.props.ActivityList }  
     });
   }
   

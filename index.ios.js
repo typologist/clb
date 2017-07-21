@@ -27,7 +27,7 @@ class clubbin extends Component {
     StatusBar.setBarStyle('light-content', true);
 
     this.state = {
-      selectedTab: 'home',
+      selectedTab: 'activities',
       isRootScene: false,  // I use this flag to reset to the initial scene when clicking a tab.
     };
   }

@@ -29,6 +29,7 @@ const ErrorText = require('../components/ErrorText');
 const FadeInImage = require('../components/FadeInImage');
 const GlobalStyles = require('../components/GlobalStyles');
 const ActivityDetail = require('./ActivityDetail');
+const ActivityList = require('./ActivityList');
 const PlaceDetail = require('./PlaceDetail');
 
 class Home extends Component {
@@ -226,13 +227,14 @@ class Home extends Component {
   }
 
   navigateTo(item, component) {
+    // console.log('routes', this.props.navigator.getCurrentRoutes(0));
     // Separators are not clickable.
     if (item.isSeparator) return;
 
     this.props.navigator.push({
       title: item.title,
       component: component,
-      passProps: {item}
+      passProps: {item, ActivityList}
     });
   }
 

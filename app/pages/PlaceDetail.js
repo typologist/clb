@@ -16,7 +16,6 @@ import ImageSlider from 'react-native-image-slider';
 const OpenUrlButton = require('../components/OpenUrlButton');
 const Util = require('../components/Util');
 const GlobalStyles = require('../components/GlobalStyles');
-const ActivityList = require('./ActivityList');
 
 
 class PlaceDetail extends Component {
@@ -110,7 +109,12 @@ class PlaceDetail extends Component {
   navigateTo(item, type) {
     this.props.navigator.push({
       title: item.title,
-      component: ActivityList,
+      // Ideally, we should just require ActivityList in this file
+      // and use it below. However, in this case, it creates
+      // an error of that file being required twice, when coming
+      // from ActivityList > ActivityDetail > PlaceDetail, so for
+      // now we just "pass this list down" through the props.
+      component: this.props.ActivityList, // ActivityList,
       passProps: {
         parent: {
           place: item.title,
@@ -125,7 +129,7 @@ class PlaceDetail extends Component {
       <ScrollView style={styles.container}>
         {this.renderImage()}
         {this.renderCoverLabels()}
-        {this.renderButton(ActivityList.all, 'Actividades', require('../images/events_white_icon.png'))}
+        {this.renderButton('All', 'Actividades', require('../images/events_white_icon.png'))}
         <Text style={GlobalStyles.horizontalSeparator}></Text>
         {this.renderTelephone()}
         {this.renderItemProperty('hours', require('../images/hours_icon.png'))}

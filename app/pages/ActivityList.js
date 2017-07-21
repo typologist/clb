@@ -33,7 +33,10 @@ class ActivityList extends Component {
 
   static all = 'All';
   static listEmptyText = 'No se encontraron Actividades.';
-
+  // Workaround to check if the comonent is mounted 
+  // https://github.com/facebook/react/issues/3417
+  mounted = false;  
+  
   constructor(props) {
     super(props);
 
@@ -56,9 +59,14 @@ class ActivityList extends Component {
   }
 
   componentDidMount() {
+    this.mounted = true;
     this.getCityFromLocalStorage()
       .then((city) => this.fetchData(city).done())
       .done();
+  }
+
+  componentWillUnmount() {
+      this.mounted = false;
   }
 
   getCityFromLocalStorage() {
@@ -147,7 +155,7 @@ class ActivityList extends Component {
     this.props.navigator.push({
       title: item.title,
       component: ActivityDetail,
-      passProps: {item}
+      passProps: {item, ActivityList}
     });
   }
 
@@ -274,10 +282,13 @@ class ActivityList extends Component {
       // ... 2. then, load the list. Ideally, we should be able to just assign
       // the items in step 1, but for some reason, switching between categories
       // causes some images not to be replaced correctly.
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(items)
-      });
-      this.listView.scrollTo({y: 0});
+      if (this.mounted) {
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(items)
+        });
+
+        this.listView.scrollTo({y: 0});
+      }
     }, 0);
 
     this.resetNoActivitiesMessage();
