@@ -34,6 +34,8 @@ class ActivityDetail extends Component {
       <TouchableHighlight
         onPress={ () => this.navigateToPlace() }>
         <View style={styles.button_container}>
+          <Image source={icon}
+            style={styles.button_icon}  />
           <Text style={styles.button_text}>{label.toUpperCase()}</Text>
           <Image source={require('../images/right_arrow_white.png')}
             style={styles.button_icon}  />
@@ -105,7 +107,7 @@ class ActivityDetail extends Component {
       <ScrollView style={styles.container}>
         {this.renderImage()}
         <View style={GlobalStyles.horizontalSeparator}></View>
-            {this.renderButton('Información Lugar', require('../images/events_white_icon.png'))}
+            {this.renderButton('Información Lugar', require('../images/locations_white_icon.png'))}
             <Text style={GlobalStyles.horizontalSeparator}></Text>
             {when}
             {this.renderItemProperty('description')}

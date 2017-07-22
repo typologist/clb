@@ -141,7 +141,7 @@ class Home extends Component {
             // Get today's activities.
             let todaysActivities = allItems.filter(this.isActivityToday);
             if (todaysActivities.length > 0) {
-              todaysActivities.unshift({title: 'PA ˈHOY!', isSeparator: true});
+              todaysActivities.unshift({title: 'PA\' HOY!', isSeparator: true});
             }
 
             // Get this week's activities (doesn't include today).
@@ -546,9 +546,14 @@ const styles = StyleSheet.create({
   },
   heading: {
     color: '#fff',
+    backgroundColor: GlobalStyles.primaryColor,
     fontFamily: GlobalStyles.primaryFontLight,
     fontSize: 14,
-    marginTop: 10,
+    marginLeft: -20,
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingLeft: 20,
+    flex: 1,
   },
   // List.
   listItem_container: {
@@ -589,7 +594,7 @@ const styles = StyleSheet.create({
   },
   listItem_separator: {
     height: 1,
-    backgroundColor: '#1B0244',
+    backgroundColor: GlobalStyles.darkPurple,
   },
   loading: {
     flex: 1,

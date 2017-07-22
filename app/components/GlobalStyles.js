@@ -7,6 +7,7 @@ const GlobalStyles = {
     primaryFontMedium: 'Raleway-Medium',
     primaryFontSemiBold: 'Raleway-SemiBold',
     primaryColor: '#700CD4',
+    darkPurple: '#1B0244',
 
     // Styles.
     horizontalSeparator: {
