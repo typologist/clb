@@ -19,11 +19,11 @@ var moment = require('moment');
 import 'moment/locale/es';
 moment.locale('es');
 
+const REQUEST_URL =  'http://clubbinrd.com/api/places?city=';
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const GlobalStyles = require('../components/GlobalStyles');
-const PlaceDetail = require('./PlaceDetail');
-const REQUEST_URL =  'http://clubbinrd.com/api/places?city=';
+
 
 class PlaceList extends Component {
 
@@ -122,7 +122,7 @@ class PlaceList extends Component {
 
     this.props.navigator.push({
       title: item.title,
-      component: PlaceDetail,
+      componentId: 'PlaceDetail',
       passProps: {item}
     });
   }

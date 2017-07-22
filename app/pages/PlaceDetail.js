@@ -109,12 +109,7 @@ class PlaceDetail extends Component {
   navigateTo(item, type) {
     this.props.navigator.push({
       title: item.title,
-      // Ideally, we should just require ActivityList in this file
-      // and use it below. However, in this case, it creates
-      // an error of that file being required twice, when coming
-      // from ActivityList > ActivityDetail > PlaceDetail, so for
-      // now we just "pass this list down" through the props.
-      component: this.props.ActivityList, // ActivityList,
+      componentId: 'ActivityList',
       passProps: {
         parent: {
           place: item.title,

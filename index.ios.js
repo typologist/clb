@@ -15,8 +15,11 @@ import {
 
 // Pages.
 let Home = require('./app/pages/Home');
-let PlaceList = require('./app/pages/PlaceList');
-let ActivityList = require('./app/pages/ActivityList');
+
+const PlaceList = require('./app/pages/PlaceList');
+const PlaceDetail = require('./app/pages/PlaceDetail');
+const ActivityList = require('./app/pages/ActivityList');
+const ActivityDetail = require('./app/pages/ActivityDetail');
 
 
 class clubbin extends Component {
@@ -27,15 +30,15 @@ class clubbin extends Component {
     StatusBar.setBarStyle('light-content', true);
 
     this.state = {
-      selectedTab: 'activities',
+      selectedTab: 'home',
       isRootScene: false,  // I use this flag to reset to the initial scene when clicking a tab.
     };
   }
 
-  renderNavigator(title, component) {
+  renderNavigator(title, componentId) {
     return (
       <Navigator
-        initialRoute={{ title: title, component: component, index: 0 }}
+        initialRoute={{ title: title, componentId: componentId, index: 0 }}
         renderScene={(route, navigator) => {
 
           // Reset to the initial scene if a tab item
@@ -50,7 +53,24 @@ class clubbin extends Component {
               }, 0);
             }
 
-            let RouteComponent = route.component;
+            // Add any new scenes here.
+            // Define which component to load, depending on the passed
+            // route id. This way we prevent cyclic dependencies issues.
+            // https://github.com/facebook/react-native/issues/3076#issuecomment-144792453
+            const routeComponents = {
+              'Home': Home,
+              'ActivityList': ActivityList,
+              'ActivityDetail': ActivityDetail,
+              'PlaceList': PlaceList,
+              'PlaceDetail': PlaceDetail,
+            };
+
+            if (!routeComponents.hasOwnProperty(route.componentId)) {
+              throw Error(`Route componentId '${route.componentId}' not found in keys. Method renderScene()`);
+            }
+
+            // This is the component that gets loaded in the scene.
+            let RouteComponent = routeComponents[route.componentId];
             return <RouteComponent navigator={navigator} {...route.passProps} />
         }}
         navigationBar={
@@ -108,7 +128,7 @@ class clubbin extends Component {
                   isRootScene: true,
               });
           }}>
-            {this.renderNavigator('CLUBBIN', Home)}
+            {this.renderNavigator('CLUBBIN', 'Home')}
           </TabBarIOS.Item>
 
           <TabBarIOS.Item
@@ -123,7 +143,7 @@ class clubbin extends Component {
                   isRootScene: true,
               });
           }}>
-            {this.renderNavigator('LUGARES', PlaceList)}
+            {this.renderNavigator('LUGARES', 'PlaceList')}
           </TabBarIOS.Item>
 
           <TabBarIOS.Item
@@ -138,7 +158,7 @@ class clubbin extends Component {
                   isRootScene: true,
               });
           }}>
-            {this.renderNavigator('ACTIVIDADES', ActivityList)}
+            {this.renderNavigator('ACTIVIDADES', 'ActivityList')}
           </TabBarIOS.Item>
       </TabBarIOS>
     </View>

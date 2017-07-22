@@ -14,7 +14,6 @@ import {
 const GlobalState = require('../components/GlobalState');
 const Util = require('../components/Util');
 const GlobalStyles = require('../components/GlobalStyles');
-const PlaceDetail = require('./PlaceDetail');
 
 
 class ActivityDetail extends Component {
@@ -59,10 +58,8 @@ class ActivityDetail extends Component {
 
     this.props.navigator.push({
       title: item.title,
-      component: PlaceDetail,
-      passProps: {
-        item: item,
-        ActivityList: this.props.ActivityList }  
+      componentId: 'PlaceDetail',
+      passProps: {item}  
     });
   }
   

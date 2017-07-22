@@ -1,5 +1,5 @@
 'use strict';
-// GOOD
+
 import React, { Component } from 'react';
 import {
   Image,
@@ -25,7 +25,6 @@ moment.locale('es');
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const GlobalStyles = require('../components/GlobalStyles');
-const ActivityDetail = require('./ActivityDetail');
 const REQUEST_URL =  'http://clubbinrd.com/api/activities?city=';
 
 
@@ -33,10 +32,7 @@ class ActivityList extends Component {
 
   static all = 'All';
   static listEmptyText = 'No se encontraron Actividades.';
-  // Workaround to check if the comonent is mounted 
-  // https://github.com/facebook/react/issues/3417
-  mounted = false;  
-  
+
   constructor(props) {
     super(props);
 
@@ -59,14 +55,9 @@ class ActivityList extends Component {
   }
 
   componentDidMount() {
-    this.mounted = true;
     this.getCityFromLocalStorage()
       .then((city) => this.fetchData(city).done())
       .done();
-  }
-
-  componentWillUnmount() {
-      this.mounted = false;
   }
 
   getCityFromLocalStorage() {
@@ -154,8 +145,8 @@ class ActivityList extends Component {
   navigateTo(item) {
     this.props.navigator.push({
       title: item.title,
-      component: ActivityDetail,
-      passProps: {item, ActivityList}
+      componentId: 'ActivityDetail',
+      passProps: {item}
     });
   }
 
@@ -282,11 +273,11 @@ class ActivityList extends Component {
       // ... 2. then, load the list. Ideally, we should be able to just assign
       // the items in step 1, but for some reason, switching between categories
       // causes some images not to be replaced correctly.
-      if (this.mounted) {
-        this.setState({
-          dataSource: this.state.dataSource.cloneWithRows(items)
-        });
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(items)
+      });
 
+      if (this.listView) {
         this.listView.scrollTo({y: 0});
       }
     }, 0);

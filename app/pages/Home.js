@@ -28,9 +28,6 @@ const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const FadeInImage = require('../components/FadeInImage');
 const GlobalStyles = require('../components/GlobalStyles');
-const ActivityDetail = require('./ActivityDetail');
-const ActivityList = require('./ActivityList');
-const PlaceDetail = require('./PlaceDetail');
 
 class Home extends Component {
 
@@ -226,15 +223,15 @@ class Home extends Component {
     return daysText; 
   }
 
-  navigateTo(item, component) {
+  navigateTo(item, componentId) {
     // console.log('routes', this.props.navigator.getCurrentRoutes(0));
     // Separators are not clickable.
     if (item.isSeparator) return;
 
     this.props.navigator.push({
       title: item.title,
-      component: component,
-      passProps: {item, ActivityList}
+      componentId: componentId,
+      passProps: {item}
     });
   }
 
@@ -288,7 +285,7 @@ class Home extends Component {
   renderRow(item) {
     return (
         <TouchableHighlight
-          onPress={() => this.navigateTo(item, ActivityDetail)}
+          onPress={() => this.navigateTo(item, 'ActivityDetail')}
           underlayColor={'transparent'}>
           <View>
             <View style={styles.listItem_container}>
@@ -331,7 +328,7 @@ class Home extends Component {
             require('../images/default_place_image.jpg');
       return (
         // <TouchableHighlight
-        //   onPress={() => this.navigateTo(item, PlaceDetail)}>
+        //   onPress={() => this.navigateTo(item, 'PlaceDetail')}>
         <View style={styles.mainItem_container}>
           <FadeInImage
             source={source}
