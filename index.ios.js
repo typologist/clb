@@ -18,6 +18,7 @@ let Home = require('./app/pages/Home');
 
 const PlaceList = require('./app/pages/PlaceList');
 const PlaceDetail = require('./app/pages/PlaceDetail');
+const PlaceFeatures = require('./app/pages/PlaceFeatures');
 const ActivityList = require('./app/pages/ActivityList');
 const ActivityDetail = require('./app/pages/ActivityDetail');
 
@@ -39,6 +40,12 @@ class clubbin extends Component {
     return (
       <Navigator
         initialRoute={{ title: title, componentId: componentId, index: 0 }}
+        configureScene={(route, routeStack) => {
+          if (route.sceneType && route.sceneType === 'Modal') {
+            return Navigator.SceneConfigs.FloatFromBottom;
+          }
+          return Navigator.SceneConfigs.PushFromRight;
+        }}
         renderScene={(route, navigator) => {
 
           // Reset to the initial scene if a tab item
@@ -63,6 +70,7 @@ class clubbin extends Component {
               'ActivityDetail': ActivityDetail,
               'PlaceList': PlaceList,
               'PlaceDetail': PlaceDetail,
+              'PlaceFeatures': PlaceFeatures,
             };
 
             if (!routeComponents.hasOwnProperty(route.componentId)) {

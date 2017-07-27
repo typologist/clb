@@ -90,11 +90,11 @@ class PlaceDetail extends Component {
     );
   }
 
-  renderButton(type, label, icon) {
+  renderPlaceFeaturesButton(label, icon) {
     let item = this.props.item;
     return (
         <TouchableHighlight
-          onPress={ () => this.navigateTo(item, type) }>
+          onPress={ () => this.navigateToPlaceFeatures(item) }>
           <View style={styles.button_container}>
             <Image source={icon}
               style={styles.button_icon}  />
@@ -106,7 +106,36 @@ class PlaceDetail extends Component {
     );
   }
 
-  navigateTo(item, type) {
+  navigateToPlaceFeatures(item) {
+    this.props.navigator.push({
+      title: item.title,
+      componentId: 'PlaceFeatures',
+      sceneType: 'Modal',
+      passProps: {
+        parent: {
+          nid: item.nid,
+        }
+      }
+    });
+  }
+
+  renderActivitiesButton(type, label, icon) {
+    let item = this.props.item;
+    return (
+        <TouchableHighlight
+          onPress={ () => this.navigateToActivityList(item, type) }>
+          <View style={styles.button_container}>
+            <Image source={icon}
+              style={styles.button_icon}  />
+            <Text style={styles.button_text}>{label.toUpperCase()}</Text>
+            <Image source={require('../images/right_arrow_white.png')}
+              style={styles.button_icon}  />
+          </View>
+        </TouchableHighlight>
+    );
+  }
+
+  navigateToActivityList(item, type) {
     this.props.navigator.push({
       title: item.title,
       componentId: 'ActivityList',
@@ -124,7 +153,8 @@ class PlaceDetail extends Component {
       <ScrollView style={styles.container}>
         {this.renderImage()}
         {this.renderCoverLabels()}
-        {this.renderButton('All', 'Actividades', require('../images/events_white_icon.png'))}
+        {this.renderActivitiesButton('All', 'Actividades', require('../images/events_white_icon.png'))}
+        {this.renderPlaceFeaturesButton('Detalles del Lugar', require('../images/list_white_icon.png'))}
         <Text style={GlobalStyles.horizontalSeparator}></Text>
         {this.renderTelephone()}
         {this.renderItemProperty('hours', require('../images/hours_icon.png'))}
