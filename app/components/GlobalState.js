@@ -2,6 +2,7 @@ class GlobalState {
     instanceExists = false;
     store = {
         places: [],
+        activities: [],
     };
     
     constructor() {

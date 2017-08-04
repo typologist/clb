@@ -22,8 +22,8 @@ var moment = require('moment');
 import 'moment/locale/es';
 moment.locale('es');
 
-import { REQUEST_CITIES_URL, REQUEST_PLACES_URL, REQUEST_ACTIVITIES_URL } from '../components/Constants';
 const GlobalState = require('../components/GlobalState');
+const DataService = require('../components/DataService');
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
 const FadeInImage = require('../components/FadeInImage');
@@ -75,8 +75,7 @@ class Home extends Component {
   }
 
   fetchCities() {
-    return fetch(REQUEST_CITIES_URL + '?time=' + moment().unix())
-      .then((response) => response.json())
+    return DataService.fetchCities()
       .then((responseData) => {
         if (responseData) {
             this.setState({
@@ -93,34 +92,24 @@ class Home extends Component {
   fetchPlaces(city) {
     this.setState({isLoading: true});
 
-    return fetch(REQUEST_PLACES_URL + city + '&time=' + moment().unix())
-      .then((response) => response.json())
-      .then((responseData) => {
-        if (responseData) {
-            // Extract only the featured ones.
-            let places = [];
-            responseData.forEach((item)=> {
-              let containsPlace = places.some(
-                (place)=> place.title === item.title);
+    return DataService.fetchPlaces(city)
+      .then((placesDirectory) => {
+        // Extract only the featured ones.
+        let places = [];
+        placesDirectory.forEach((item)=> {
+          let containsPlace = places.some(
+            (place)=> place.title === item.title);
 
-              if (item.featured == 1 && !containsPlace) {
-                places.push(item);
-              }
-            });
+          if (item.featured == 1 && !containsPlace) {
+            places.push(item);
+          }
+        });
 
-            this.setState({
-              activeCity: city,
-              isLoading: false,
-              featuredItems: this.state.featuredItems.concat(places)
-            });
-
-            // We have to pass the places through this method first since
-            // it removes duplicates and adds the 'images' property.
-            GlobalState.set({
-              places: Util.getDirectoryList(responseData)
-            });
-        }
-        return true;
+        this.setState({
+          activeCity: city,
+          isLoading: false,
+          featuredItems: this.state.featuredItems.concat(places)
+        });
       })
       .catch((error) => {
         this.setState({hasError: true});
@@ -131,46 +120,40 @@ class Home extends Component {
   fetchActivities(city) {
     this.setState({isLoading: true});
     
-    return fetch(REQUEST_ACTIVITIES_URL + city + '&time=' + moment().unix())
-      .then((response) => response.json())
-      .then((responseData) => {
-        if (responseData) {
+    return DataService.fetchActivities(city)
+      .then((allItems) => {
+          // Get today's activities.
+          let todaysActivities = allItems.filter(this.isActivityToday);
+          if (todaysActivities.length > 0) {
+            todaysActivities.unshift({title: 'PA\' HOY!', isSeparator: true});
+          }
 
-            let allItems = Util.removeDuplicatedItems(responseData);
+          // Get this week's activities (doesn't include today).
+          let weeksActivities = allItems.filter((item)=> this.isActivityInWeek(item, 0));
+          if (weeksActivities.length > 0) {
+            weeksActivities.unshift({title: 'ESTA SEMANA', isSeparator: true});
+          }
 
-            // Get today's activities.
-            let todaysActivities = allItems.filter(this.isActivityToday);
-            if (todaysActivities.length > 0) {
-              todaysActivities.unshift({title: 'PA\' HOY!', isSeparator: true});
-            }
+          // Get next week's activities (doesn't include today).
+          let nextWeeksActivities = allItems.filter((item)=> this.isActivityInWeek(item, 1));
+          if (nextWeeksActivities.length > 0) {
+            nextWeeksActivities.unshift({title: 'PRÓXIMA SEMANA', isSeparator: true});
+          }
 
-            // Get this week's activities (doesn't include today).
-            let weeksActivities = allItems.filter((item)=> this.isActivityInWeek(item, 0));
-            if (weeksActivities.length > 0) {
-              weeksActivities.unshift({title: 'ESTA SEMANA', isSeparator: true});
-            }
+          // Create a single list from todays and this week's activities.
+          let activities = todaysActivities.concat(weeksActivities, nextWeeksActivities);
 
-            // Get next week's activities (doesn't include today).
-            let nextWeeksActivities = allItems.filter((item)=> this.isActivityInWeek(item, 1));
-            if (nextWeeksActivities.length > 0) {
-              nextWeeksActivities.unshift({title: 'PRÓXIMA SEMANA', isSeparator: true});
-            }
+          // Extract the featured.
+          let featuredActivities = allItems.filter((item)=> {
+            return item.featured == 1;
+          });
 
-            // Create a single list from todays and this week's activities.
-            let activities = todaysActivities.concat(weeksActivities, nextWeeksActivities);
-
-            // Extract the featured.
-            let featuredActivities = allItems.filter((item)=> {
-              return item.featured == 1;
-            });
-
-            this.setState({
-                comingSoon: this.state.comingSoon.cloneWithRows(activities),
-                isLoading: false,
-                isListEmpty: allItems.length === 0 ? true : false,
-                featuredItems: this.state.featuredItems.concat(featuredActivities)
-            });
-        }
+          this.setState({
+              comingSoon: this.state.comingSoon.cloneWithRows(activities),
+              isLoading: false,
+              isListEmpty: allItems.length === 0 ? true : false,
+              featuredItems: this.state.featuredItems.concat(featuredActivities)
+          });
       })
       .catch((error) => {
         this.setState({hasError: true});

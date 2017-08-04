@@ -17,15 +17,14 @@ import {
 } from 'react-native';
 import Menu, { MenuContext, MenuOptions, MenuOption, MenuTrigger } from 'react-native-menu';
 
-//import moment from 'moment/src/moment';  // Doesn't work for locale.
 var moment = require('moment');
 import 'moment/locale/es';
 moment.locale('es');
 
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
+const DataService = require('../components/DataService');
 const GlobalStyles = require('../components/GlobalStyles');
-const REQUEST_URL =  'http://clubbinrd.com/api/activities?city=';
 
 
 class ActivityList extends Component {
@@ -66,12 +65,11 @@ class ActivityList extends Component {
   }
 
   refreshListView() {
-    this.getCityFromLocalStorage()
-      .then((city) => {
-        this.fetchData(city)
-          .then(()=> this.listView.scrollTo({y: 0}))
-          .done();
+    this.getCityFromLocalStorage().then((city) => {
+      DataService.fetchPlaces(city).then(() => {
+          this.fetchData(city).then(()=> this.listView.scrollTo({y: 0})).done();
       });
+    });
   }
 
   refreshListIfCityChanged() {
@@ -93,48 +91,62 @@ class ActivityList extends Component {
     }
   }
 
+  fetchDataFromLocalOrServer(city) {
+    let activities = GlobalState.get('activities');
+    if (activities.length) {
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(places),
+        isLoading: false,
+        allItems: places,
+        activeCity: city,
+        activeCategory: PlaceList.all,
+        categories: this.extractCategoriesFromItems(places),
+        isListEmpty: places.length === 0 ? true : false,
+      });
+    }
+    else {
+      this.fetchData(city).done();
+    }
+  }
+
   fetchData(city) {
     this.resetNoActivitiesMessage();
-    return fetch(REQUEST_URL + city + '&time=' + moment().unix())
-      .then((response) => response.json())
-      .then((responseData) => {
-        if (responseData) {
-          let allItems = Util.removeDuplicatedItems(responseData);
-          let items = [];
-          let activeCategory = '';
 
-          // If there are properties passed from the parent scene (PlaceDetail)
-          // it means we only want the activities from that place.
-          if (this.props.parent) {
-            items = allItems.filter((item)=> {
-                return (
-                  this.stringEquals(item.where, this.props.parent.place)
-                );
-            });
-            activeCategory = this.props.parent.type;
-          }
-          else {
-            items = allItems;
-            activeCategory = ActivityList.all;
-          }
+    return DataService.fetchActivities(city)
+      .then((allItems) => {
+        let items = [];
+        let activeCategory = '';
 
-          this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(items),
-            isLoading: false,
-            allItems: items,
-            activeCity: city,
-            activeCategory: activeCategory,
-            categories: this.extractCategoriesFromItems(allItems),
-            isListEmpty: items.length === 0 ? true : false,
+        // If there are properties passed from the parent scene (PlaceDetail)
+        // it means we only want the activities from that place.
+        if (this.props.parent) {
+          items = allItems.filter((item)=> {
+              return (
+                this.stringEquals(item.where, this.props.parent.place)
+              );
           });
-
-          // If there are properties passed from the parent
-          // filter then by type.
-          if (this.props.parent) {
-            this.filterByType(this.props.parent.type);
-          }
+          activeCategory = this.props.parent.type;
+        }
+        else {
+          items = allItems;
+          activeCategory = ActivityList.all;
         }
 
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(items),
+          isLoading: false,
+          allItems: items,
+          activeCity: city,
+          activeCategory: activeCategory,
+          categories: this.extractCategoriesFromItems(allItems),
+          isListEmpty: items.length === 0 ? true : false,
+        });
+
+        // If there are properties passed from the parent
+        // filter then by type.
+        if (this.props.parent) {
+          this.filterByType(this.props.parent.type);
+        }
       })
       .catch((error) => {
         this.setState({ hasError: true });

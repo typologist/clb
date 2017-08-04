@@ -1,4 +1,3 @@
-// GOOD.
 'use strict';
 
 import React, { Component } from 'react';
@@ -15,13 +14,10 @@ import {
 } from 'react-native';
 import Menu, { MenuContext, MenuOptions, MenuOption, MenuTrigger } from 'react-native-menu';
 
-var moment = require('moment');
-import 'moment/locale/es';
-moment.locale('es');
-
-const REQUEST_URL =  'http://clubbinrd.com/api/places?city=';
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
+const DataService = require('../components/DataService');
+const GlobalState = require('../components/GlobalState');
 const GlobalStyles = require('../components/GlobalStyles');
 
 
@@ -48,7 +44,7 @@ class PlaceList extends Component {
 
   componentDidMount() {
     this.getCityFromLocalStorage()
-      .then((city) => this.fetchData(city).done())
+      .then((city) => this.fetchDataFromLocalOrServer(city))
       .done();
   }
 
@@ -85,30 +81,37 @@ class PlaceList extends Component {
     });
   }
 
+  fetchDataFromLocalOrServer(city) {
+    let places = GlobalState.get('places');
+    if (places.length) {
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(places),
+        isLoading: false,
+        allItems: places,
+        activeCity: city,
+        activeCategory: PlaceList.all,
+        categories: this.extractCategoriesFromItems(places),
+        isListEmpty: places.length === 0 ? true : false,
+      });
+    }
+    else {
+      this.fetchData(city).done();
+    }
+  }
+
   fetchData(city) {
-    return fetch(REQUEST_URL + city + '&time=' + moment().unix())
-      .then((response) => response.json())
-      .then((responseData) => {
-        if (responseData) {
-          let results = responseData;
+    return DataService.fetchPlaces(city)
+      .then((directoryList) => {
 
-          // Add the letters separators to the list.
-          let directoryList = Util.getDirectoryList(results);
-
-          this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(directoryList),
-            isLoading: false,
-            allItems: results,
-            activeCity: city,
-            activeCategory: PlaceList.all,
-            categories: this.extractCategoriesFromItems(results),
-            isListEmpty: results.length === 0 ? true : false,
-          });
-        }
-        else {
-          throw new Error('fetch() could not load data from the server.');
-        }
-
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(directoryList),
+          isLoading: false,
+          allItems: directoryList,
+          activeCity: city,
+          activeCategory: PlaceList.all,
+          categories: this.extractCategoriesFromItems(directoryList),
+          isListEmpty: directoryList.length === 0 ? true : false,
+        });
       })
       .catch((error) => {
         this.setState({hasError: true});
