@@ -161,8 +161,8 @@ class PlaceList extends Component {
     for (let prop in allItems) {
       // Check the "category" first.
       if (typeof(unique[allItems[prop].category]) == "undefined" && 
-          allItems[prop].category !== null) {
-        categories.push(allItems[prop].category);
+          allItems[prop].category) {
+            categories.push(allItems[prop].category);
       }
       unique[allItems[prop].category] = 0;
     }    
@@ -179,12 +179,10 @@ class PlaceList extends Component {
     }
     else {
       items = this.state.allItems.filter((item)=> {
-          return item.category === category;
+          return item.category === category ;
       });
+      items = Util.getDirectoryList(items, false);
     }
-
-    // Add the letter separators.
-    items = Util.getDirectoryList(items);
 
     // Filter the list.
     this.setState({
@@ -211,6 +209,11 @@ class PlaceList extends Component {
         styles.filterButton_text;
   }
 
+  // Displays the category name or an alias if it's "All".
+  getAllDisplayName(category) {
+    return category === 'All' ? 'Todos los lugares' : category;
+  }
+  
   renderEmptyListText() {
     // We use this flag to show a message if the list is empty.
     if (this.state.isListEmpty) {
@@ -224,7 +227,7 @@ class PlaceList extends Component {
     const menuOptions = this.state.categories.map((categoryName, i) => {
       return (
         <MenuOption value={categoryName} key={i}>
-          <Text style={{color: 'white'}}>{categoryName}</Text>
+          <Text style={{color: 'white'}}>{this.getAllDisplayName(categoryName)}</Text>
         </MenuOption>
       );
     });
@@ -237,7 +240,7 @@ class PlaceList extends Component {
             <View style={{flexDirection: 'row'}}>
               <Text style={{ fontSize: 28, color: '#fff' }}>&#8942;</Text>
               <Text style={{ color: '#fff', paddingTop: 10 }}>
-                {this.state.activeCategory.toUpperCase()}
+                {this.getAllDisplayName(this.state.activeCategory).toUpperCase()}
               </Text>
             </View>
           </MenuTrigger>

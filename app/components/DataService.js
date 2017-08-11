@@ -20,7 +20,6 @@ class DataService {
   }
 
   fetchPlaces(city) {
-    console.log('fetch places');
     return fetch(REQUEST_PLACES_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
@@ -31,7 +30,6 @@ class DataService {
   }
 
   fetchActivities(city) {
-    console.log('server activities')
     return fetch(REQUEST_ACTIVITIES_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {

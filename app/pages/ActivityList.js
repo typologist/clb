@@ -162,6 +162,11 @@ class ActivityList extends Component {
     });
   }
 
+  // Displays the category name or an alias if it's "All".
+  getAllDisplayName(category) {
+    return category === 'All' ? 'Todas las actividades' : category;
+  }
+  
   renderItemThumbnail(item) {
     let source;
     if (item.uri) {
@@ -310,8 +315,7 @@ class ActivityList extends Component {
       // The properties used as categories are "type" and "specialType".
 
       // Check the "type" first.
-      if (typeof(unique[allItems[prop].type]) == "undefined" && 
-          allItems[prop].type !== null) {
+      if (typeof(unique[allItems[prop].type]) == "undefined" && allItems[prop].type) {
         categories.push(allItems[prop].type);
       }
       // Check the "specialType".
@@ -393,7 +397,7 @@ class ActivityList extends Component {
     const menuOptions = this.state.categories.map((categoryName, i) => {
       return (
         <MenuOption value={categoryName} key={i}>
-          <Text style={{color: 'white'}}>{categoryName}</Text>
+          <Text style={{color: 'white'}}>{this.getAllDisplayName(categoryName)}</Text>
         </MenuOption>
       );
     });
@@ -406,7 +410,7 @@ class ActivityList extends Component {
             <View style={{flexDirection: 'row'}}>
               <Text style={{ fontSize: 28, color: '#fff' }}>&#8942;</Text>
               <Text style={{ color: '#fff', paddingTop: 10 }}>
-                {this.state.activeCategory.toUpperCase()}
+                {this.getAllDisplayName(this.state.activeCategory).toUpperCase()}
               </Text>
             </View>
           </MenuTrigger>

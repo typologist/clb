@@ -116,7 +116,7 @@ class Util {
 
   // Creates a list with letters separators and add an "images" property 
   // that groups each element's images.
-  static getDirectoryList(results) {
+  static getDirectoryList(results, groupImages = true) {
     let lettersHash = Util.getAlphaNumericHash();
     let directoryList = [];
 
@@ -155,13 +155,17 @@ class Util {
 
         // First we create a new property called images, and group there
         // all the images ('uri's from each duplicated element).
-        item.images = [];
-        if (item.uri) {
-          item.images.push(Util.getImagePath(item.uri, 'large')); // Use the 'large' image style.
+        if (groupImages) {
+          item.images = [];
+          if (item.uri) {
+            item.images.push(Util.getImagePath(item.uri, 'large')); // Use the 'large' image style.
+          }
         }
+
         let itemExists = directoryList.some((listItem) => {
           if (listItem.title === item.title) {
-            listItem.images.push(item.uri);
+            if (groupImages) listItem.images.push(item.uri);
+
             return true;
           }
         });

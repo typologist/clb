@@ -352,7 +352,7 @@ class Home extends Component {
               </Text>
             </View>
           </MenuTrigger>
-          <MenuOptions optionsContainerStyle={{ backgroundColor: 'black', opacity: .9, position: 'absolute', left: 10 }}>
+          <MenuOptions optionsContainerStyle={{ backgroundColor: 'black', width: 260, opacity: .9, position: 'absolute', left: 10 }}>
             {menuOptions}
           </MenuOptions>
         </Menu>
