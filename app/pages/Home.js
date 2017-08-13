@@ -22,7 +22,6 @@ var moment = require('moment');
 import 'moment/locale/es';
 moment.locale('es');
 
-const GlobalState = require('../components/GlobalState');
 const DataService = require('../components/DataService');
 const Util = require('../components/Util');
 const ErrorText = require('../components/ErrorText');
@@ -43,7 +42,7 @@ class Home extends Component {
       }),
       featuredItems: [],      
       cities: [],
-      activeCity: 'Santo Domingo',
+      activeCity: '',
       isListEmpty: false,
       hasError: false,
     };
@@ -90,7 +89,10 @@ class Home extends Component {
   }
 
   fetchPlaces(city) {
-    this.setState({isLoading: true});
+    this.setState({
+      isLoading: true, 
+      activeCity: city
+    });
 
     return DataService.fetchPlaces(city)
       .then((placesDirectory) => {
@@ -106,7 +108,6 @@ class Home extends Component {
         });
 
         this.setState({
-          activeCity: city,
           isLoading: false,
           featuredItems: this.state.featuredItems.concat(places)
         });
@@ -346,8 +347,8 @@ class Home extends Component {
         <Menu onSelect={(value) => this.setCity(value)}>
           <MenuTrigger>
             <View style={{flexDirection: 'row'}}>
-              <Text style={{ fontSize: 28, color: '#fff' }}>&#8942;</Text>
-              <Text style={{ color: '#fff', paddingTop: 10 }}>
+              <Text style={{ fontSize: 26, color: '#fff' }}>&#8942;</Text>
+              <Text style={{ color: '#fff', paddingTop: 8, fontFamily: GlobalStyles.primaryFontSemiBold }}>
                 {this.state.activeCity.toUpperCase()}
               </Text>
             </View>

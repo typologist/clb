@@ -409,7 +409,7 @@ class ActivityList extends Component {
           <MenuTrigger>
             <View style={{flexDirection: 'row'}}>
               <Text style={{ fontSize: 28, color: '#fff' }}>&#8942;</Text>
-              <Text style={{ color: '#fff', paddingTop: 10 }}>
+              <Text style={{ color: '#fff', paddingTop: 10, fontFamily: GlobalStyles.primaryFontSemiBold }}>
                 {this.getAllDisplayName(this.state.activeCategory).toUpperCase()}
               </Text>
             </View>

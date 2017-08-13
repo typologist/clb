@@ -1,5 +1,6 @@
 class GlobalState {
     instanceExists = false;
+    getAsyncTimer = 0;
     store = {
         places: [],
         activities: [],

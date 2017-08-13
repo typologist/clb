@@ -76,7 +76,7 @@ class PlaceList extends Component {
     this.getCityFromLocalStorage().then((city) => {
       if (city !== this.state.activeCity) {
         this.setState({isLoading: true});
-        this.fetchData(city).done();
+        this.fetchDataFromLocalOrServer(city);
       }
     });
   }
@@ -95,7 +95,9 @@ class PlaceList extends Component {
       });
     }
     else {
-      this.fetchData(city).done();
+      setTimeout(() => {
+        this.fetchDataFromLocalOrServer(city);
+      }, 300);
     }
   }
 
@@ -239,7 +241,7 @@ class PlaceList extends Component {
           <MenuTrigger>
             <View style={{flexDirection: 'row'}}>
               <Text style={{ fontSize: 28, color: '#fff' }}>&#8942;</Text>
-              <Text style={{ color: '#fff', paddingTop: 10 }}>
+              <Text style={{ color: '#fff', paddingTop: 10, fontFamily: GlobalStyles.primaryFontSemiBold }}>
                 {this.getAllDisplayName(this.state.activeCategory).toUpperCase()}
               </Text>
             </View>
