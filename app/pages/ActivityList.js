@@ -91,24 +91,6 @@ class ActivityList extends Component {
     }
   }
 
-  fetchDataFromLocalOrServer(city) {
-    let activities = GlobalState.get('activities');
-    if (activities.length) {
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(places),
-        isLoading: false,
-        allItems: places,
-        activeCity: city,
-        activeCategory: PlaceList.all,
-        categories: this.extractCategoriesFromItems(places),
-        isListEmpty: places.length === 0 ? true : false,
-      });
-    }
-    else {
-      this.fetchData(city).done();
-    }
-  }
-
   fetchData(city) {
     this.resetNoActivitiesMessage();
 

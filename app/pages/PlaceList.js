@@ -52,7 +52,10 @@ class PlaceList extends Component {
     // Refresh the view if on the list view 
     // (which is the first element in the routeStack array)
     if (nextProps.navigator.state.routeStack.length === 1) {
-      this.refreshListIfCityChanged();
+      this.getCityFromLocalStorage().then((city) => {
+          this.setState({isLoading: true});
+          this.fetchDataFromLocalOrServer(city);
+      });
     }
   }
 
@@ -68,17 +71,6 @@ class PlaceList extends Component {
   getCityFromLocalStorage() {
     return AsyncStorage.getItem('@Clubbin:city')
       .then((city) => city || '');
-  }
-
-  refreshListIfCityChanged() {
-    // If the city on local storage is different from the one
-    // in this scene (activeCity), ask the server for data.
-    this.getCityFromLocalStorage().then((city) => {
-      if (city !== this.state.activeCity) {
-        this.setState({isLoading: true});
-        this.fetchDataFromLocalOrServer(city);
-      }
-    });
   }
 
   fetchDataFromLocalOrServer(city) {

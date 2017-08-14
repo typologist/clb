@@ -102,8 +102,7 @@ class ActivityDetail extends Component {
     let when = item.every.length ?
       this.renderItemProperty('every', 'Cada:') :
       this.renderItemProperty('when');
-      let copyright = `© Todos los derechos pertenecen a ${item.where} \n o a sus respectivos autores.`;
-    console.log('where', item.where);
+    let copyright = `© Todos los derechos pertenecen a ${item.where} \n o a sus respectivos autores.`;
     let infoPlaceButton = !this.findPlaceByTitle(item.where) ? null :
       this.renderButton('Información Lugar', require('../images/locations_white_icon.png'));
    
