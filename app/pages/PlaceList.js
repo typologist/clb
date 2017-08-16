@@ -53,8 +53,7 @@ class PlaceList extends Component {
     // (which is the first element in the routeStack array)
     if (nextProps.navigator.state.routeStack.length === 1) {
       this.getCityFromLocalStorage().then((city) => {
-          this.setState({isLoading: true});
-          this.fetchDataFromLocalOrServer(city);
+        this.refreshListIfCityChanged(city);
       });
     }
   }
@@ -71,6 +70,17 @@ class PlaceList extends Component {
   getCityFromLocalStorage() {
     return AsyncStorage.getItem('@Clubbin:city')
       .then((city) => city || '');
+  }
+
+  refreshListIfCityChanged(city) {
+    // We compare the new chosen city to the active city 
+    // and to the city of the first item in the list, to make sure
+    // we detect when it changed.
+    if (this.state.activeCity !== city ||
+        this.state.allItems[1].city !== city) {
+      this.setState({isLoading: true});
+      this.fetchDataFromLocalOrServer(city);
+    }    
   }
 
   fetchDataFromLocalOrServer(city) {

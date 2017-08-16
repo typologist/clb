@@ -20,6 +20,9 @@ class DataService {
   }
 
   fetchPlaces(city) {
+    // Empty the places, so that we can detect changes to it.
+    GlobalState.set({places: []});
+
     return fetch(REQUEST_PLACES_URL + city + '&time=' + moment().unix())
       .then((response) => response.json())
       .then((responseData) => {
